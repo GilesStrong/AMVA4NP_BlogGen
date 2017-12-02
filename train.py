@@ -10,6 +10,8 @@ import numpy as np
 import random
 import sys
 import optparse
+from six.moves import cPickle as pickle
+import glob
 
 def sample(preds, temperature=1.0):
     # helper function to sample an index from a probability array
@@ -26,8 +28,14 @@ if __name__ == "__main__":
     parser.add_option("-e", "--epoch", dest = "epochs", action = "store", default = 60, help = "Number of epochs to train")
     opts, args = parser.parse_args()
 
-    with open(opts.author + '.pkl', 'r') as fin:
-        text = pickle.load(fin)
+    if opts.author != 'all':
+        with open('posts/' + opts.author + '.pkl', 'r') as fin:
+            text = pickle.load(fin)
+    else:
+        text = ''
+        for author in glob.glob('posts/*.pkl'):
+            with open(author, 'r') as fin:
+                text += pickle.load(fin)
 
     text = text.lower()
     print('corpus length:', len(text))
@@ -74,7 +82,7 @@ if __name__ == "__main__":
         model.fit(x, y,
                   batch_size=128,
                   epochs=1)
-        model.save('deep_' + author + '.h5')
+        model.save('generators/' + opts.author + '.h5')
 
         start_index = random.randint(0, len(text) - maxlen - 1)
 
